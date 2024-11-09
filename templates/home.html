@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+
+{% block title %}
+    Home
+{% endblock %}
+
+{% block link_one %}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        #url_short::placeholder{
+            font-weight: 600;
+            color: rgb(88, 88, 88);
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="container"><br>
+        {% if messages %}
+            {% for message in messages %}
+                <div class="col-lg-8 offset-lg-2">
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% if user.is_authenticated %}<br>
+        <h1 class="text-center pt-3 fw-bold">URL Shortner</h1>
+            <div class="col-lg-6 offset-lg-3 border p-5 mt-3 rounded-5 bg-white shadow">
+                <form id="post-form">
+                    {% csrf_token %}
+                        <div class="input-group">
+                            <input type="text" aria-describedby="basic-addon1" class="form-control" id="link" name="link" placeholder="Enter URL here" required>
+                            <button type="submit" id="basic-addon1" class="input-group-text bg-success text-white">GO</button>
+                        </div>
+                </form>
+                    <div id="url_result">
+                        <p class="fw-bold text-center mt-4">Shortened Link:</p>
+                    <div class="input-group">
+                        <input type="text" aria-describedby="basic-addon1" class="form-control" id="url_short" name="url_short" placeholder="" disabled>
+                        <span title="copy link" id="basic-addon2" class="input-group-text bg-success text-white" style="cursor: pointer"><i class="far fa-copy"></i></span>
+                    </div>
+                    </div>
+            </div>
+
+
+
+        {% else %}<br><br>
+            <div class="col-lg-6 offset-lg-3 border p-4 px-5 rounded-5 bg-white shadow">
+                <h1 class="text-center pt-3 fw-bold">Welcome</h1><br>
+                <p class="text-center" style="font-weight: 600; color: rgb(113, 113, 113)">
+                    Looking for a simple way to share links without the hassle of long URLs? Our URL shortener is here to help! With just a few clicks, you can transform lengthy web addresses into short, manageable links that are perfect for social media, emails, and text messages.
+                </p>
+                <a href="{% url 'login' %}" class="d-flex justify-content-center mt-4 text-decoration-none">
+                    <div class="btn btn-success rounded">Get Started</div>
+                </a><br>
+            </div>
+        {% endif %}
+    </div>
+
+    <script type="text/javascript">
+        $(document).on('submit','#post-form', function(e){
+        e.preventDefault();
+
+        $.ajax({
+            type: 'POST',
+            url: 'create/',
+            data: {
+                link:$('#link').val(),
+                csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val(),
+            },
+            success: function(data){
+                $('#url_short').attr('placeholder', 'localhost:8000/' + data);
+            }
+        });
+    });
+</script>
+<script>
+    $(document).ready(function() {
+        $('#basic-addon2').on('click', function() {
+            // Get the placeholder text from the input
+            var placeholderText = $('#url_short').attr('placeholder');
+
+            // Copy the placeholder text to the clipboard
+            navigator.clipboard.writeText(placeholderText).then(function() {
+                // Optional: Alert user or change the icon color to indicate success
+                alert("Copied to clipboard: " + placeholderText);
+            }).catch(function(err) {
+                console.error('Could not copy text: ', err);
+            });
+        });
+    });
+</script>
+{% endblock %}
